@@ -31,8 +31,33 @@ Route::get('/', function(){
 
 Route::get('/comprar/{id}', function($id){
     $celular = Celular::find($id);    
-    return View::make('celular', array('celular' => $celular));
+    return View::make('celular', compact('celular'));
 });
+
+Route::post('/pagar', function(Request $request){
+            $SECRET_KEY = "sk_test_6Adnnwwh0lP0RoMj";
+            $culqi = new Culqi(array('api_key' => $SECRET_KEY));
+                        
+            $charge = $culqi->Cargos->create(
+                array(
+                  "amount" => 1000,
+                  "capture" => true,
+                  "currency_code" => "PEN",
+                  "description" => "Venta de prueba",
+                  "email" => "test@culqi.com",
+                  "installments" => 0,
+                  "antifraud_details" => array(
+                      "address" => "Av. Lima 123",
+                      "address_city" => "LIMA",
+                      "country_code" => "PE",
+                      "first_name" => "Will",
+                      "last_name" => "Muro",
+                      "phone_number" => "9889678986",
+                  ),
+                  "source_id" => $request->input('token')
+                )
+            );
+})->name('pagar.culqi');
 
      
 Route::post('tarjeta', function(Request $request){
@@ -49,7 +74,7 @@ Route::post('tarjeta', function(Request $request){
     
         // Autenticación
         $culqi = new Culqi(array('api_key' => $SECRET_API_KEY));
-        $culqi->setEnv("INTEG");
+       
         
         try{
             // Creamos Cargo a una tarjeta
